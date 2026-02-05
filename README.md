@@ -43,6 +43,9 @@ Har avänt mig av
 	•	Git och GitHub
 
 ⸻
+  
+SQLite-databasen innehåller rensad och transformerad data som genereras av ETL-pipelinen.
+
 
 Hur man kör projektet
 
