@@ -14,6 +14,8 @@ Vad projektet gör
 	2.	Rensar datan (saknade värden, datatyper m.m.)
 	3.	Sparar den färdiga datan i en SQLite-databas
 	4.	Använder notebooks för att kontrollera och analysera resultatet
+	5. Beräknar KPI:er (kundbetyg, churn, sentiment)
+6. Skapar visualiseringar för affärsinsikter
 
 ⸻
 
@@ -47,10 +49,16 @@ Har avänt mig av
 SQLite-databasen innehåller rensad och transformerad data som genereras av ETL-pipelinen.
 
 
-Hur man kör projektet
+
+Hur man kör projektet lokalt
 
 pip install -r requirements.txt
-python matkassen-etl/notebook/pipeline/etl_pipeline.py
+
+ETL-pipelinen kan köras via:
+- Jupyter Notebook (etl_pipeline.ipynb)
+- eller Python-fil (etl_pipeline.py)
+
+Resultatet sparas i en lokal SQLite-databas (matkassen.db).
 
 
 ⸻
