@@ -1,108 +1,64 @@
-import pandas as pd
+nano matkassen-etl/notebook/pipeline/etl_pipeline.pyimport pandas as pd
 
 
-def clean_week_price(df: pd.DataFrame) -> pd.DataFrame:
-    """
-    Städar veckapris: klarar '499 kr', '499SEK', '499:-', komma/punkt m.m.
-    """
+def fix_veckapris(df: pd.DataFrame) -> pd.DataFrame:
+    df = df.copy()
     s = df["veckapris"].astype(str).str.lower()
+    s = s.str.replace(r"[^0-9,\.]", "", regex=True)
     s = s.str.replace(",", ".", regex=False)
-    s = (
-        s.str.replace("sek", "", regex=False)
-         .str.replace("kr", "", regex=False)
-         .str.replace(":-", "", regex=False)
-         .str.replace(" ", "", regex=False)
-    )
-    s = s.str.extract(r"(\d+(?:\.\d+)?)", expand=False)
     df["veckapris"] = pd.to_numeric(s, errors="coerce")
     return df
 
-def normalize_categories(df: pd.DataFrame) -> pd.DataFrame:
-    """
-    Normaliserar kasstyp så samma kategori inte finns i flera varianter
-    """
-    df["kasstyp"] = df["kasstyp"].str.strip()
 
-    df["kasstyp"] = df["kasstyp"].replace({
-        # Klassisk
-        "Classic": "Klassisk",
-        "KLASSISK": "Klassisk",
+def fix_kasstyp(df: pd.DataFrame) -> pd.DataFrame:
+    df = df.copy()
+    s = df["kasstyp"].astype(str).str.strip().str.lower()
+
+    kasstyp_map = {
         "klassisk": "Klassisk",
-        "Standard": "Klassisk",
-
-        # Familj
-        "Family": "Familj",
-        "FAMILJ": "Familj",
+        "classic": "Klassisk",
         "familj": "Familj",
-        "Familjekassen": "Familj",
-
-        # Vegetarisk
-        "Vegetarian": "Vegetarisk",
-        "VEGETARIAN": "Vegetarisk",
-        "VEGETARISK": "Vegetarisk",
+        "family": "Familj",
         "vegetarisk": "Vegetarisk",
-        "Veg": "Vegetarisk",
-        "veg": "Vegetarisk",
-        "Veggie": "Vegetarisk",
+        "vegetarian": "Vegetarisk",
+        "vego": "Vegetarisk",
+        "snabb": "Snabb",
+        "snabbkasse": "Snabb",
+        "premium": "Premium",
+    }
 
-        # Snabb & Enkel
-        "Snabb & enkel": "Snabb & Enkel",
-        "snabb": "Snabb & Enkel",
-        "30-min": "Snabb & Enkel",
-        "Express": "Snabb & Enkel",
-        "Quick": "Snabb & Enkel",
-    })
-    return df
-
-def clean_delivery_status(df: pd.DataFrame) -> pd.DataFrame:
-    """
-    Normaliserar leveransstatus till Levererad / Missad
-    """
-    df["leveransstatus"] = df["leveransstatus"].replace({
-        "Delivered": "Levererad",
-        "Ok": "Levererad",
-        "missad": "Missad"
-    })
+    df["kasstyp"] = s.map(kasstyp_map).fillna(s.str.title())
     return df
 
 
-def parse_dates(df: pd.DataFrame) -> pd.DataFrame:
-    """
-    Konverterar datumkolumner till datetime
-    """
-    date_cols = [
-        "pren_startdatum",
-        "paus_från",
-        "paus_till",
-        "pren_avslutsdatum",
-        "leveransdatum",
-        "omdömesdatum"
-    ]
-    for col in date_cols:
-        if col in df.columns:
-            df[col] = pd.to_datetime(df[col], errors="coerce")
+def fix_kostpreferens(df: pd.DataFrame) -> pd.DataFrame:
+    df = df.copy()
+    s = df["kostpreferens"].astype(str).str.strip().str.lower()
+
+    kost_map = {
+        "standard": "Standard",
+        "": "Standard",
+        "nan": "Standard",
+        "laktosfri": "Laktosfri",
+        "laktos": "Laktosfri",
+        "glutenfri": "Glutenfri",
+        "gluten": "Glutenfri",
+        "nötfri": "Nötfri",
+        "nötter": "Nötfri",
+        "fläskfri": "Fläskfri",
+        "no pork": "Fläskfri",
+        "vegetarisk": "Vegetarisk",
+        "vegetarian": "Vegetarisk",
+        "vego": "Vegetarisk",
+    }
+
+    df["kostpreferens"] = s.map(kost_map).fillna("Standard")
     return df
 
 
-def run_pipeline(df: pd.DataFrame) -> pd.DataFrame:
-    """
-    Huvudfunktion som kör hela ETL-pipelinen
-    """
-    df = clean_week_price(df)
-    df = normalize_categories(df)
-    df = clean_delivery_status(df)
-    df = parse_dates(df)
-    return df
-
-
-if __name__ == "__main__":
-    print("ETL pipeline startar 🚀")
-
-    df_raw = pd.read_csv("notebook/matkassen_data.csv")
-    print("Rådata inläst:", df_raw.shape)
-
-    df_clean = run_pipeline(df_raw)
-    print("Data efter pipeline:", df_clean.shape)
-
-    df_clean.to_csv("notebook/matkassen_data_clean.csv", index=False)
-    print("Tvättad data sparad ")   
+def transform_pipeline(df: pd.DataFrame) -> pd.DataFrame:
+    df_clean = df.copy()
+    df_clean = fix_veckapris(df_clean)
+    df_clean = fix_kasstyp(df_clean)
+    df_clean = fix_kostpreferens(df_clean)
+    return df_clean
