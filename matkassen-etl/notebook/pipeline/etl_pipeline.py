@@ -1,4 +1,4 @@
-nano matkassen-etl/notebook/pipeline/etl_pipeline.pyimport pandas as pd
+import pandas as pd
 
 
 def fix_veckapris(df: pd.DataFrame) -> pd.DataFrame:
