@@ -160,9 +160,3 @@ Projektet genomfördes för att:
 # Status
 
 Projektet är färdigt och fungerar lokalt.
-
-
-
-“Detta används för att verifiera att datan laddats korrekt.”
-sqlite3 matkassen.db "SELECT count(*) FROM matkassen_tvattad;"
-sqlite3 matkassen.db "PRAGMA table_info(matkassen_tvattad);"
