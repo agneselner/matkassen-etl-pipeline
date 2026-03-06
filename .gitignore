@@ -45,9 +45,10 @@ wheels/
 .DS_Store
 Thumbs.db
 
-# Data files (optional - remove if you want to track them)
-*.csv
-*.xlsx
+# Generated outputs and data
+matkassen-etl/notebook/outputs/
+matkassen-etl/notebook/data/
+*.db
 *.xls
 # Databases
 *.sqlite
